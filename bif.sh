@@ -2,8 +2,8 @@
 # bif v.02 - basic iptables firewall setter
 # g0 2011 - http://ipduh.com/contact
 # bIf protects from most and allows many but you should edit at least BAD_IP_URL and OPEN_INBOUND_TCP
-# 2012 - There is an entry about bif at aLog.ipduh.com 
-# 2013 - http://alog.ipduh.com/2013/02/bif.html 
+# 12-13 - http://alog.ipduh.com/search/label/bIf
+# 2015 - http://sl.ipduh.com/bIf
 
 # Settings START
 
@@ -31,7 +31,7 @@ TCP_JUST_ME="139 445 1028 4949 4950 22 123"
 # Open to few UDP ports
 UDP_JUST_ME="137 138 69 123"
 
-# *_JUST_ME allowed 
+# *_JUST_ME allowed
 JUST_ME="10.0.0.0/25"
 
 # WHITE LIST --Still you can lock yourself out if you put something silly in *BAD_IP*
@@ -47,14 +47,14 @@ ALLOW_PING_FROM="10.21.241.27"
 # NAT Settings START
 # Set ALLOW_NAT to "" to disable NAT
 ALLOW_NAT="10.21.241.0/26"
-WAN="eth0:1" 
+WAN="eth0:1"
 LAN="eth0"
 LAN_SRV_IP=""
 LAN_SRV_TCP_PORT=""
 LAN_SRV_UDP_PORT=""
 # NAT Settings END
 
-# Allow Protocol 41 IPv6 Tunneled Traffic 
+# Allow Protocol 41 IPv6 Tunneled Traffic
 ALLOW_P41=""
 
 # Paths to the programs used
@@ -69,7 +69,7 @@ SED="/bin/sed"
 TR="/usr/bin/tr"
 ECHO="/bin/echo"
 
-# Settings END 
+# Settings END
 
 ########
 
@@ -125,7 +125,7 @@ fi
 ########
 
 function allow_41 {
-# Allow ipv6 ICMP and inbound proto 41 ipv6 tunnel traffic from the ipv6 tunnel PoP 
+# Allow ipv6 ICMP and inbound proto 41 ipv6 tunnel traffic from the ipv6 tunnel PoP
 #${IPTABLES} -A INPUT -p icmpv6 -j ACCEPT
 if [ -n "${ALLOW_P41}" ]; then
 	for ALLOW_P41_IP in ${ALLOW_P41}; do
@@ -137,10 +137,10 @@ fi
 ########
 
 function just_me {
-# Puch Holes for JUST_ME 
+# Puch Holes for JUST_ME
 if [ -n "$JUST_ME" ] ; then
-	
-	for JUST_ME_IP in $JUST_ME; do	
+
+	for JUST_ME_IP in $JUST_ME; do
 
 	   if [ -n "$TCP_JUST_ME" ] ; then
 	   for TCP_PORT_X in $TCP_JUST_ME; do
@@ -166,12 +166,12 @@ fi
 ########
 
 function accounting {
-#  
+#
 if [ -n "${ACCOUNT_FOR}" ] ; then
 
 	for ACCOUNT_FOR_IP in ${ACCOUNT_FOR}; do
-	   ${IPTABLES} -I INPUT -d ${ACCOUNT_FOR_IP}	
-	   ${IPTABLES} -I OUTPUT -s ${ACCOUNT_FOR_IP}	
+	   ${IPTABLES} -I INPUT -d ${ACCOUNT_FOR_IP}
+	   ${IPTABLES} -I OUTPUT -s ${ACCOUNT_FOR_IP}
 	done
 fi
 
@@ -212,8 +212,8 @@ if [ -n "${ALLOW_NAT}" ]; then
   ${IPTABLES} -A FORWARD -i ${LAN} -s ${ALLOW_NAT} -j ACCEPT
   ${IPTABLES} -A FORWARD -o ${LAN} -s ${ALLOW_NAT} -j ACCEPT
   ${IPTABLES} -t nat -A POSTROUTING -o ${WAN} -j MASQUERADE -s ${ALLOW_NAT}
- 
-  if [ -n "${LAN_SRV_IP}" ]; then 
+
+  if [ -n "${LAN_SRV_IP}" ]; then
   echo "lan_srv_ip != null"
   #Forward inbound traffic to a behind the NAT server
      for TCPORT in ${LAN_SRV_TCP_PORT}; do
@@ -252,14 +252,14 @@ $IPTABLES -t mangle -X
 $IPTABLES -t raw -F
 $IPTABLES -t raw -X
 
-#Accept Multicast 
-$IPTABLES -A INPUT  -d 224.0.0.0/4  -m state --state NEW  -j ACCEPT 
+#Accept Multicast
+$IPTABLES -A INPUT  -d 224.0.0.0/4  -m state --state NEW  -j ACCEPT
 
-#Set a liberal-permissive OUTPUT Policy -- Remember that firewalls were not invented to be liberal 
+#Set a liberal-permissive OUTPUT Policy -- Remember that firewalls were not invented to be liberal
 #$IPTABLES -P OUTPUT -j ACCEPT
 $IPTABLES -A OUTPUT -j ACCEPT -o lo
 
-#Allow outbound connections -- You should disable or further specify this if you are a reasonable paranoid admin
+#Allow outbound connections -- You should disable or further specify this if you are a reasonably paranoid admin
 $IPTABLES -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
 
 #Drop NEW tcp that does not start with SYN packets
