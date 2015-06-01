@@ -34,7 +34,7 @@ UDP_JUST_ME="137 138 69 123"
 # *_JUST_ME allowed
 JUST_ME="10.0.0.0/25"
 
-# WHITE LIST --Still you can lock yourself out if you put something silly in *BAD_IP*
+# WHITE LIST --You can still lock yourself out if you put something silly in *BAD_IP*
 WHITE_LIST="10.21.241|94.70.136|192.0.2|127.0.0|198.51.100|192.168.1"
 
 # Set up IP Accounting for the IP in ACCOUNT_FOR
