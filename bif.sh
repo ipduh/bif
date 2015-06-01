@@ -5,14 +5,14 @@
 # 12-13 - http://alog.ipduh.com/search/label/bIf
 # 2015 - http://sl.ipduh.com/bIf
 
-# Settings START
+# Settings BEGIN
 
 # BIF_BAD_IP_FILE stores BAD IP addresses and sets of IP addresses in CIDR notation
 # If BIF_BAD_IP_FILE does not exist this functionality is disabled
 BIF_BAD_IP_FILE="/etc/bif.bad"
 
 # BIF_BLOCKED_HTML shows the Blocked IP addresses with links to the ipduh apropos
-BIF_BLOCKED_HTML="/var/www/sites/wifi.ipduh.awmn/www/bif-blocked.html"
+BIF_BLOCKED_HTML="/var/www/example.net/www/blocked.html"
 
 # URL of bad IP list , set to "" to disable
 # BAD_IP_URL="http://archimedes.ipduh.com/bad_ip.html"
@@ -35,18 +35,18 @@ UDP_JUST_ME="137 138 69 123"
 JUST_ME="10.0.0.0/25"
 
 # WHITE LIST --Still you can lock yourself out if you put something silly in *BAD_IP*
-WHITE_LIST="10.21.241|94.70.136|0.0.0.0|127.0.0|10.0.0"
+WHITE_LIST="10.21.241|94.70.136|192.0.2|127.0.0|198.51.100|192.168.1"
 
 # Set up IP Accounting for the IP in ACCOUNT_FOR
-ACCOUNT_FOR="10.0.0.11 94.70.136.159"
+ACCOUNT_FOR="192.168.1.1 198.51.100.99 192.0.2.34"
 
 #
-ALLOW_ICMP_FOR="10.21.241.125"
-ALLOW_PING_FROM="10.21.241.27"
+ALLOW_ICMP_FOR="192.0.2.34"
+ALLOW_PING_FROM="198.51.100.0/24"
 
-# NAT Settings START
+# NAT Settings BEGIN
 # Set ALLOW_NAT to "" to disable NAT
-ALLOW_NAT="10.21.241.0/26"
+ALLOW_NAT="192.168.1.0/26"
 WAN="eth0:1"
 LAN="eth0"
 LAN_SRV_IP=""
