@@ -1,61 +1,12 @@
 #!/bin/bash
-# bif v.02 - basic iptables firewall setter
-# g0 2011 - http://ipduh.com/contact
-# bIf protects from most and allows many but you should edit at least BAD_IP_URL and OPEN_INBOUND_TCP
-# 12-13 - http://alog.ipduh.com/search/label/bIf
-# 2015 - http://sl.ipduh.com/bIf
+# bif - yet another silly Basic Iptables Firewall setter that you should not use
+# g0, 2011 - http://ipduh.com/contact
 
-# Settings BEGIN
+BIFCONF="/etc/bif/bif.conf"
+BIFSH="/usr/sbin/bif"
+SAVEDRULES="/etc/bif/rules.iptables"
 
-# BIF_BAD_IP_FILE stores BAD IP addresses and sets of IP addresses in CIDR notation
-# If BIF_BAD_IP_FILE does not exist this functionality is disabled
-BIF_BAD_IP_FILE="/etc/bif.bad"
-
-# BIF_BLOCKED_HTML shows the Blocked IP addresses with links to the ipduh apropos
-BIF_BLOCKED_HTML="/var/www/example.net/www/blocked.html"
-
-# URL of bad IP list , set to "" to disable
-# BAD_IP_URL="http://archimedes.ipduh.com/bad_ip.html"
-BAD_IP_URL=""
-BAD_IP_FROM_URL=""
-
-# Open TCP ports List , TCP Services
-OPEN_INBOUND_TCP="22 25 43 53 80 143 389 443 179"
-
-# Open UDP ports List
-OPEN_INBOUND_UDP="53 514"
-
-# Open to few TCP ports
-TCP_JUST_ME="139 445 1028 4949 4950 22 123"
-
-# Open to few UDP ports
-UDP_JUST_ME="137 138 69 123"
-
-# *_JUST_ME allowed
-JUST_ME="10.0.0.0/25"
-
-# WHITE LIST --You can still lock yourself out if you put something silly in *BAD_IP*
-WHITE_LIST="10.21.241|94.70.136|192.0.2|127.0.0|198.51.100|192.168.1"
-
-# Set up IP Accounting for the IP in ACCOUNT_FOR
-ACCOUNT_FOR="192.168.1.1 198.51.100.99 192.0.2.34"
-
-#
-ALLOW_ICMP_FOR="192.0.2.34"
-ALLOW_PING_FROM="198.51.100.0/24"
-
-# NAT Settings BEGIN
-# Set ALLOW_NAT to "" to disable NAT
-ALLOW_NAT="192.168.1.0/26"
-WAN="eth0:1"
-LAN="eth0"
-LAN_SRV_IP=""
-LAN_SRV_TCP_PORT=""
-LAN_SRV_UDP_PORT=""
-# NAT Settings END
-
-# Allow Protocol 41 IPv6 Tunneled Traffic
-ALLOW_P41=""
+. ${BIFCONF}
 
 # Paths to the programs used
 IPTABLES="/sbin/iptables"
@@ -68,8 +19,6 @@ UNIQ="/usr/bin/uniq"
 SED="/bin/sed"
 TR="/usr/bin/tr"
 ECHO="/bin/echo"
-
-# Settings END
 
 ########
 
@@ -126,7 +75,7 @@ fi
 
 function allow_41 {
 # Allow ipv6 ICMP and inbound proto 41 ipv6 tunnel traffic from the ipv6 tunnel PoP
-#${IPTABLES} -A INPUT -p icmpv6 -j ACCEPT
+${IPTABLES} -A INPUT -p icmpv6 -j ACCEPT
 if [ -n "${ALLOW_P41}" ]; then
 	for ALLOW_P41_IP in ${ALLOW_P41}; do
 		${IPTABLES} -A INPUT -p ipv6 -s ${ALLOW_P41_IP} -j ACCEPT
@@ -145,16 +94,12 @@ if [ -n "$JUST_ME" ] ; then
 	   if [ -n "$TCP_JUST_ME" ] ; then
 	   for TCP_PORT_X in $TCP_JUST_ME; do
      	      ${IPTABLES} -A INPUT -p tcp --dport ${TCP_PORT_X} -s ${JUST_ME_IP} -j ACCEPT
-     	      #${IPTABLES} -A INPUT -p tcp --dport ${TCP_PORT_X} -i ${LAN} -s ${JUST_ME_IP} -j ACCEPT
-              #${IPTABLES} -A INPUT -m state --state NEW -p tcp --dport ${TCP_PORT_X} -i ${LAN} -s ${JUST_ME_IP} -j ACCEPT
 	    done
 	    fi
 
 	    if [ -n "$UDP_JUST_ME" ] ; then
 	    for UDPPORT_X in $UDP_JUST_ME; do
-               #${IPTABLES} -A INPUT -p udp --dport ${UDPPORT_X} -i ${LAN} -s ${JUST_ME_IP} -j ACCEPT
                ${IPTABLES} -A INPUT -p udp --dport ${UDPPORT_X} -s ${JUST_ME_IP} -j ACCEPT
-               #${IPTABLES} -A INPUT -m state --state NEW -p udp --dport ${UDPPORT_X} -i ${LAN} -s ${JUST_ME_IP} -j ACCEPT
                ${IPTABLES} -A INPUT -m state --state NEW -p udp --dport ${UDPPORT_X} -s ${JUST_ME_IP} -j ACCEPT
 	     done
 	     fi
@@ -204,7 +149,6 @@ fi
 }
 
 ########
-
 function nat {
 
 if [ -n "${ALLOW_NAT}" ]; then
@@ -214,8 +158,6 @@ if [ -n "${ALLOW_NAT}" ]; then
   ${IPTABLES} -t nat -A POSTROUTING -o ${WAN} -j MASQUERADE -s ${ALLOW_NAT}
 
   if [ -n "${LAN_SRV_IP}" ]; then
-  echo "lan_srv_ip != null"
-  #Forward inbound traffic to a behind the NAT server
      for TCPORT in ${LAN_SRV_TCP_PORT}; do
         ${IPTABLES} -t nat -A PREROUTING -i ${WAN} -p tcp --dport ${TCPORT} -j DNAT --to ${LAN_SRV_IP}:${TCPORT}
      done
@@ -242,15 +184,11 @@ fi
 
 
 
-#Flush iptables chains
+#Flush
 $IPTABLES -F
-$IPTABLES -X
 $IPTABLES -t nat -F
-$IPTABLES -t nat -X
 $IPTABLES -t mangle -F
-$IPTABLES -t mangle -X
 $IPTABLES -t raw -F
-$IPTABLES -t raw -X
 
 #Accept Multicast
 $IPTABLES -A INPUT  -d 224.0.0.0/4  -m state --state NEW  -j ACCEPT
@@ -278,9 +216,9 @@ iptables -A INPUT -p tcp --tcp-flags ALL NONE -j DROP
 $IPTABLES -A INPUT -i lo -j ACCEPT
 $IPTABLES -A INPUT ! -i lo -d 127.0.0.0/8 -j REJECT
 
-accounting
+#accounting
 
-drop_bad
+#drop_bad
 
 just_me
 
@@ -305,5 +243,6 @@ allow_udp_for_all
 #Drop the rest, bif is not polite
 ${IPTABLES} -A INPUT -j DROP
 
-$IPTABLES_SAVE > /etc/rules.iptables
+${IPTABLES_SAVE} > ${SAVEDRULES}
 
+# vi:syntax=sh

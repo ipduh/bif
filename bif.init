@@ -1,14 +1,14 @@
 #!/bin/sh
-# g0 2012 
+# g0 2012
 # Debian /etc/network/if-pre-up.d/bif
 
-BIF="/etc/bif"
+BIF="/usr/sbin/bif"
 
 if [ -x ${BIF} ]; then
-/sbin/iptables-restore < /etc/rules.iptables
-${BIF}
-echo "Up" | logger -t bif
-exit 0
+	/sbin/iptables-restore < /etc/bif/rules.iptables
+	${BIF}
+	echo "Up" | logger -t bif
+	exit 0
 fi
 
 echo "Failed to set up the iptables" | logger -t bif
